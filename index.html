@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0E0F13">
+<title>인공 성대</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon.svg">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-dot"></span>
+    <span>인공 성대</span>
+  </div>
+  <div class="topbar-actions">
+    <button id="themeBtn" class="icon-btn" title="테마 전환" aria-label="테마 전환">◐</button>
+    <button id="editBtn" class="ghost-btn" aria-pressed="false">편집</button>
+  </div>
+</header>
+
+<main id="grid" class="grid" aria-label="음성 버튼"></main>
+
+<div id="empty" class="empty hidden">
+  <div class="empty-emoji">🎙️</div>
+  <p>아직 음성 버튼이 없어요.</p>
+  <button id="emptyAddBtn" class="primary-btn">+ 첫 음성 추가</button>
+</div>
+
+<footer class="bottombar">
+  <span class="vol-icon">🔊</span>
+  <span class="vol-label">전체 볼륨</span>
+  <input id="globalVol" class="slider" type="range" min="100" max="400" step="10" value="150">
+  <output id="globalVolOut" class="vol-out">150%</output>
+</footer>
+
+<!-- 음성 버튼 추가/편집 시트 -->
+<div id="editSheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 id="editTitle">새 음성 버튼</h2>
+
+    <label class="field-label" for="nameInput">버튼 이름</label>
+    <input id="nameInput" class="text-input" type="text" placeholder="예: 물 좀 주세요" maxlength="40" autocomplete="off">
+
+    <div class="rec-row">
+      <button id="recBtn" class="rec-btn">● 녹음 시작</button>
+      <button id="previewBtn" class="ghost-btn" disabled>▶ 미리듣기</button>
+      <span id="recStatus" class="rec-status"></span>
+    </div>
+
+    <label class="field-label" for="gainInput">이 버튼 음량 증폭 <output id="gainOut">100%</output></label>
+    <input id="gainInput" class="slider" type="range" min="50" max="400" step="10" value="100">
+
+    <div id="editExtra" class="rec-row">
+      <button id="pinBtn" class="ghost-btn" aria-pressed="false">★ 고정</button>
+      <button id="moveUpBtn" class="ghost-btn">↑ 위로</button>
+      <button id="moveDownBtn" class="ghost-btn">↓ 아래로</button>
+      <button id="deleteBtn" class="ghost-btn" style="color:var(--danger);border-color:var(--danger)">🗑 삭제</button>
+    </div>
+
+    <div class="sheet-actions">
+      <button id="editCancelBtn" class="ghost-btn">취소</button>
+      <button id="editSaveBtn" class="primary-btn">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- TTS(직접 입력) 시트 -->
+<div id="ttsSheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="ttsTitle">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2 id="ttsTitle">🗣️ 직접 입력해서 말하기</h2>
+    <textarea id="ttsText" class="text-input" rows="3" placeholder="여기에 하고 싶은 말을 입력하세요"></textarea>
+    <div id="ttsRecent" class="chips"></div>
+    <div id="ttsWarn" class="warn hidden"></div>
+    <div class="sheet-actions">
+      <button id="ttsCloseBtn" class="ghost-btn">닫기</button>
+      <button id="ttsSpeakBtn" class="primary-btn">▶ 읽어주기</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

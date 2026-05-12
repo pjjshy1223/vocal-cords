@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"C:\\\\Users\\\\USER\\\\.claude\\\\projects\\\\d--sandbox-vocal-cords\\\\memory\\\\\" 2>/dev/null && cat \"C:\\\\Users\\\\USER\\\\.claude\\\\projects\\\\d--sandbox-vocal-cords\\\\memory\\\\MEMORY.md\" 2>/dev/null || echo \"no memory\")",
+      "Read(//c/Users/USER/.claude/projects/d--sandbox-vocal-cords/memory\" 2>/dev/null && cat C:UsersUSER.claudeprojectsd--sandbox-vocal-cordsmemoryMEMORY.md 2>/dev/**)",
+      "Bash(cat '/c/Users/USER/.claude/projects/d--sandbox-vocal-cords/memory/MEMORY.md' 2>/dev/null || echo \"no memory\")",
+      "Read(//c/Users/USER/.claude/projects/d--sandbox-vocal-cords/memory/**)",
+      "Bash(node --check app.js)",
+      "Bash(node --check sw.js)"
+    ]
+  }
+}

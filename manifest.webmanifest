@@ -1,0 +1,16 @@
+{
+  "name": "인공 성대",
+  "short_name": "인공 성대",
+  "description": "미리 녹음한 내 목소리를 버튼으로 재생하고, 직접 입력한 문장을 읽어주는 보조 발성 앱",
+  "lang": "ko",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E0F13",
+  "theme_color": "#0E0F13",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
