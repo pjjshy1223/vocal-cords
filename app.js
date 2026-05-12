@@ -42,6 +42,10 @@ const PREF = {
   set theme(v) { localStorage.setItem('vc.theme', v); },
   get ttsRecent() { try { return JSON.parse(localStorage.getItem('vc.ttsRecent') || '[]'); } catch { return []; } },
   set ttsRecent(arr) { localStorage.setItem('vc.ttsRecent', JSON.stringify(arr.slice(0, 8))); },
+  get ttsVoiceURI() { return localStorage.getItem('vc.ttsVoiceURI') || ''; },
+  set ttsVoiceURI(v) { localStorage.setItem('vc.ttsVoiceURI', v || ''); },
+  get ttsPitch() { return parseFloat(localStorage.getItem('vc.ttsPitch') || '1'); },
+  set ttsPitch(v) { localStorage.setItem('vc.ttsPitch', String(v)); },
 };
 
 /* ============ Web Audio: playback with gain ============ */
@@ -114,24 +118,24 @@ function stopRecording() {
 }
 
 /* ============ TTS ============ */
-let _koVoice = undefined; // undefined=not checked, null=none, Voice=found
-function pickKoVoice() {
-  const voices = speechSynthesis.getVoices();
-  _koVoice = voices.find(v => /ko(-|_)?KR/i.test(v.lang)) || voices.find(v => /^ko/i.test(v.lang)) || null;
-}
-function ensureVoices(cb) {
-  pickKoVoice();
-  if (_koVoice !== null || speechSynthesis.getVoices().length) return cb();
-  speechSynthesis.onvoiceschanged = () => { pickKoVoice(); cb(); };
-  setTimeout(cb, 800);
+function allVoices() { try { return speechSynthesis.getVoices() || []; } catch { return []; } }
+function koVoices() { return allVoices().filter(v => /^ko/i.test(v.lang)); }
+const MALE_RE = /(male|man|남성|남자)/i;
+function defaultVoiceURI() {
+  const all = allVoices();
+  if (PREF.ttsVoiceURI && all.some(v => v.voiceURI === PREF.ttsVoiceURI)) return PREF.ttsVoiceURI;
+  const ko = koVoices();
+  const male = ko.find(v => MALE_RE.test(v.name));
+  return ((male || ko[0] || all[0]) || {}).voiceURI || '';
 }
 function speak(text) {
   if (!text.trim()) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'ko-KR';
-  if (_koVoice) u.voice = _koVoice;
-  u.rate = 1; u.pitch = 1;
+  const v = allVoices().find(x => x.voiceURI === PREF.ttsVoiceURI);
+  if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'ko-KR'; }
+  u.pitch = PREF.ttsPitch;
+  u.rate = 1;
   speechSynthesis.speak(u);
 }
 
@@ -310,6 +314,8 @@ deleteBtn.addEventListener('click', async () => {
 
 /* ============ TTS sheet ============ */
 const ttsSheet = $('#ttsSheet'), ttsText = $('#ttsText'), ttsRecent = $('#ttsRecent'), ttsWarn = $('#ttsWarn');
+const ttsVoiceSel = $('#ttsVoice'), ttsPitch = $('#ttsPitch'), ttsPitchOut = $('#ttsPitchOut');
+
 function renderRecentChips() {
   ttsRecent.innerHTML = '';
   for (const s of PREF.ttsRecent) {
@@ -319,13 +325,43 @@ function renderRecentChips() {
     ttsRecent.appendChild(c);
   }
 }
+function populateVoiceSelect() {
+  const all = allVoices();
+  const ko = koVoices();
+  const others = all.filter(v => !/^ko/i.test(v.lang));
+  const list = ko.concat(others);
+  ttsVoiceSel.innerHTML = '';
+  if (!list.length) {
+    const o = document.createElement('option'); o.textContent = '(기기에 음성이 없어요)'; ttsVoiceSel.appendChild(o);
+  }
+  for (const v of list) {
+    const o = document.createElement('option');
+    o.value = v.voiceURI;
+    const isKo = /^ko/i.test(v.lang);
+    const tag = MALE_RE.test(v.name) ? ' · 남성' : '';
+    o.textContent = `${v.name} — ${v.lang}${tag}${isKo ? ' ✓한국어' : ''}`;
+    ttsVoiceSel.appendChild(o);
+  }
+  const want = (PREF.ttsVoiceURI && list.some(v => v.voiceURI === PREF.ttsVoiceURI)) ? PREF.ttsVoiceURI : defaultVoiceURI();
+  if (want) { ttsVoiceSel.value = want; PREF.ttsVoiceURI = want; }
+  ttsWarn.classList.toggle('hidden', ko.length > 0);
+  if (!ko.length) ttsWarn.textContent = '이 기기에 한국어 음성이 없어요. 목록에서 다른 음성을 고르거나, 안드로이드 "설정 > 일반(또는 접근성) > 텍스트 음성 변환(TTS)"에서 한국어 음성을 설치해 보세요. 삼성 기기는 "삼성 TTS"에 남성/여성 한국어 음성이 들어 있는 경우가 많습니다.';
+}
 function openTtsSheet() {
-  ensureVoices(() => { ttsWarn.classList.toggle('hidden', !!_koVoice); if (!_koVoice) ttsWarn.textContent = '이 기기에 한국어 음성이 없어요. 기본 음성으로 읽습니다. (안드로이드: 설정 > 접근성 > TTS 출력에서 한국어 음성 설치)'; });
-  renderRecentChips();
   ttsSheet.classList.remove('hidden');
+  ttsPitch.value = PREF.ttsPitch; ttsPitchOut.textContent = Number(PREF.ttsPitch).toFixed(1);
+  populateVoiceSelect();
+  if (!allVoices().length) setTimeout(populateVoiceSelect, 400);
+  renderRecentChips();
   ttsText.focus();
 }
 function closeTtsSheet() { speechSynthesis.cancel(); ttsSheet.classList.add('hidden'); }
+
+ttsVoiceSel.addEventListener('change', () => { PREF.ttsVoiceURI = ttsVoiceSel.value; });
+ttsPitch.addEventListener('input', () => { ttsPitchOut.textContent = Number(ttsPitch.value).toFixed(1); PREF.ttsPitch = parseFloat(ttsPitch.value); });
+if ('speechSynthesis' in window) {
+  speechSynthesis.addEventListener('voiceschanged', () => { if (!ttsSheet.classList.contains('hidden')) populateVoiceSelect(); });
+}
 function doSpeak() {
   const text = ttsText.value.trim();
   if (!text) return;
@@ -358,6 +394,18 @@ globalVol.value = PREF.globalVol; globalVolOut.textContent = PREF.globalVol + '%
 globalVol.addEventListener('input', () => { globalVolOut.textContent = globalVol.value + '%'; PREF.globalVol = parseInt(globalVol.value, 10); });
 
 $('#emptyAddBtn').addEventListener('click', () => openEditSheet(null));
+
+/* ============ install (PWA) ============ */
+let _deferredPrompt = null;
+const installBtn = $('#installBtn');
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _deferredPrompt = e; installBtn.classList.remove('hidden'); });
+installBtn.addEventListener('click', async () => {
+  if (!_deferredPrompt) return;
+  _deferredPrompt.prompt();
+  try { await _deferredPrompt.userChoice; } catch {}
+  _deferredPrompt = null; installBtn.classList.add('hidden');
+});
+window.addEventListener('appinstalled', () => { _deferredPrompt = null; installBtn.classList.add('hidden'); });
 
 /* ============ toast ============ */
 let _toastT = null;

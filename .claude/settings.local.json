@@ -6,7 +6,9 @@
       "Bash(cat '/c/Users/USER/.claude/projects/d--sandbox-vocal-cords/memory/MEMORY.md' 2>/dev/null || echo \"no memory\")",
       "Read(//c/Users/USER/.claude/projects/d--sandbox-vocal-cords/memory/**)",
       "Bash(node --check app.js)",
-      "Bash(node --check sw.js)"
+      "Bash(node --check sw.js)",
+      "Bash(cat)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File /tmp/genicons.ps1)"
     ]
   }
 }

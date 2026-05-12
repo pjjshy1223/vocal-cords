@@ -1,4 +1,4 @@
-const CACHE = 'vocal-cords-v1';
+const CACHE = 'vocal-cords-v2';
 const SHELL = [
   './',
   './index.html',
@@ -6,7 +6,9 @@ const SHELL = [
   './app.js',
   './manifest.webmanifest',
   './icons/icon.svg',
-  './icons/icon-maskable.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
 ];
 
 self.addEventListener('install', e => {
